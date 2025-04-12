@@ -4,6 +4,8 @@ import { unstable_cache as cache } from "next/cache"
 import { cookies, headers } from "next/headers";
 import { NextRequest } from "next/server";
 
+
+export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest, context: {
     params: Promise<{
         id: string,

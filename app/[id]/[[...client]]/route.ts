@@ -14,20 +14,20 @@ export async function GET(request: NextRequest, context: {
 }) {
     const params = await context.params;
 
-    const queries = cache(async () => {
-        return await notion.databases.query({
-            database_id: "1d39fc6fac8780139981ffad065bd774",
-            filter: {
-                property: "id",
-                rich_text: {
-                    equals: params.id,
-                },
+    // const queries = cache(async () => {
+    const data = await notion.databases.query({
+        database_id: "1d39fc6fac8780139981ffad065bd774",
+        filter: {
+            property: "id",
+            rich_text: {
+                equals: params.id,
             },
-        });
-    }, [params.id], { tags: ["notion/" + params.id + Math.random()] });
+        },
+    });
+    // }, [params.id], { tags: ["notion/" + params.id + Math.random()] });
 
 
-    const data = await queries();
+    // const data = await queries();
 
 
     if (data.results.length === 0) {

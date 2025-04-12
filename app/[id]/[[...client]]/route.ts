@@ -4,6 +4,9 @@ import { unstable_cache as cache } from "next/cache"
 import { cookies, headers } from "next/headers";
 import { NextRequest } from "next/server";
 
+import { waitUntil } from "@vercel/functions";
+
+
 
 export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest, context: {
@@ -62,18 +65,22 @@ export async function GET(request: NextRequest, context: {
         return acc;
     }, {});
     // for now let's go to the redirection link only
+    waitUntil(new Promise(async (r) => {
+        analytics.capture({
+            distinctId: params.client,
+            event: "viewed",
+            disableGeoip: true,
+            properties: {
+                id: params.id,
+                cookies: cookiess,
+                headers: headerss,
+                searchParams,
+            }
+        });
 
-    analytics.capture({
-        distinctId: params.client,
-        event: "viewed",
-        disableGeoip: true,
-        properties: {
-            id: params.id,
-            cookies: cookiess,
-            headers: headerss,
-            searchParams,
-        }
-    });
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+    }));
+
 
     return Response.redirect(app["Redirect link"] ?? "https://laknabil.me");
 }

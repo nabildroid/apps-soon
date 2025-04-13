@@ -39,17 +39,24 @@ export async function GET(request: NextRequest, context: {
     }, {});
 
     // for now let's go to the redirection link only
-    analytics.capture({
-        distinctId: params.client,
-        event: "viewed",
-        disableGeoip: true,
-        properties: {
-            id: params.id,
-            ...cookiess,
-            ...headerss,
-            ...searchParams,
-        }
-    });
+
+
+    waitUntil(new Promise((resolve) => {
+        analytics.capture({
+            distinctId: params.client.length > 0 ? params.client : "unknown",
+            event: "viewed",
+            disableGeoip: true,
+            properties: {
+                id: params.id,
+                ...cookiess,
+                ...headerss,
+                ...searchParams,
+            }
+        });
+        console.log("going to capture the event" + Math.random());
+
+        setTimeout(resolve, 1000);
+    }));
 
 
 

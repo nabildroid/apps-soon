@@ -5,6 +5,7 @@ import { cookies, headers } from "next/headers";
 import { NextRequest } from "next/server";
 
 import { waitUntil } from "@vercel/functions";
+import { getAppById } from "@/app/lib";
 
 
 
@@ -16,71 +17,49 @@ export async function GET(request: NextRequest, context: {
     }>
 }) {
     const params = await context.params;
-
-    // const queries = cache(async () => {
-    const data = await notion.databases.query({
-        database_id: "1d39fc6fac8780139981ffad065bd774",
-        filter: {
-            property: "id",
-            rich_text: {
-                equals: params.id,
-            },
-        },
-    });
-    // }, [params.id], { tags: ["notion/" + params.id + Math.random()] });
-
-
-    // const data = await queries();
-
-
-    if (data.results.length === 0) {
-        return new Response(
-            JSON.stringify({
-                message: `No data found for ${params.id} for ${params.client}`,
-            }),
-            { status: 404 }
-        );
-    }
-
-    const app = makeIAPPFromNotionPage(data.results[0]);
+    console.time("NotionApp");
+    const app = await getAppById(params.id);
+    console.timeEnd("NotionApp");
 
     // either go to the redirection link, or go to the template, or default coming soon
 
-
-
-
-
     const searchParams = Array.from(new URL(request.url).searchParams.entries()).reduce((acc, [key, value]) => {
-        (acc as any)[key] = value;
+        (acc as any)["searchParams-" + key] = value;
         return acc;
     }, {});
 
     const cookiess = Array.from(await cookies()).reduce((acc, [key, value]) => {
-        (acc as any)[key] = value;
+        (acc as any)["cookie-" + key] = value;
         return acc;
     }, {});
 
     const headerss = Array.from(await headers()).reduce((acc, [key, value]) => {
-        (acc as any)[key] = value;
+        (acc as any)["header-" + key] = value;
         return acc;
     }, {});
+
     // for now let's go to the redirection link only
-    waitUntil(new Promise(async (r) => {
-        analytics.capture({
-            distinctId: params.client,
-            event: "viewed",
-            disableGeoip: true,
-            properties: {
-                id: params.id,
-                cookies: cookiess,
-                headers: headerss,
-                searchParams,
-            }
-        });
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-    }));
+    analytics.capture({
+        distinctId: params.client,
+        event: "viewed",
+        disableGeoip: true,
+        properties: {
+            id: params.id,
+            ...cookiess,
+            ...headerss,
+            ...searchParams,
+        }
+    });
 
 
-    return Response.redirect(app["Redirect link"] ?? "https://laknabil.me");
+
+    let url: URL;
+    try {
+        url = new URL(app["Redirect link"]!);
+    } catch (e) {
+        url = new URL("https://l.laknabil.me/t/soon");
+    }
+
+
+    return Response.redirect(url);
 }

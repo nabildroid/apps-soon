@@ -43,7 +43,7 @@ export async function GET(request: NextRequest, context: {
 
     waitUntil(new Promise((resolve) => {
         analytics.capture({
-            distinctId: params.client.length > 0 ? params.client : "unknown",
+            distinctId: params.client ?? "unknown",
             event: "viewed",
             disableGeoip: true,
             properties: {

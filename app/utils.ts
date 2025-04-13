@@ -7,5 +7,8 @@ export const notion = new NotionClient({
 
 
 export const analytics = new PostHog(process.env.POSTHOG_API_KEY!, {
-    host: 'https://eu.i.posthog.com'
+    host: 'https://eu.i.posthog.com',
+    disableGeoip: true,
+    flushInterval: 0,
+    flushAt: 0,
 });

@@ -85,11 +85,6 @@ export async function GET(request: NextRequest, context: {
         url = new URL("https://l.laknabil.me/t/soon");
     }
 
-
-
-    return Response.json({
-        app,
-        ip
-    });
+    
     return Response.redirect(url);
 }

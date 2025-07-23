@@ -6,6 +6,7 @@ import { NextRequest } from "next/server";
 
 import { waitUntil } from "@vercel/functions";
 import { getAppById } from "@/app/lib";
+import { postRedis, redis } from "@/app/upstash";
 
 
 
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest, context: {
     params: Promise<{
         id: string,
-        client: string,
+        client: string[],
     }>
 }) {
     const params = await context.params;
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest, context: {
 
 
     analytics.capture({
-        distinctId: params.client ?? "unknown",
+        distinctId: params.client.join("/") ?? "unknown",
         event: "viewed",
         disableGeoip: true,
         properties: {
@@ -52,7 +53,25 @@ export async function GET(request: NextRequest, context: {
             ...searchParams,
         }
     });
-    waitUntil(analytics.shutdown());
+
+
+    waitUntil((async () => {
+        await analytics.shutdown();
+
+        // log the ip to the system
+
+        const ip = request.headers.get("x-forwarded-for");
+        if (ip) {
+            await postRedis(`set/${ip}/EX/600`, {
+                name: app.Name,
+                source:params.client.join("/"),
+                id: params.id,
+            })
+        }
+
+        return;
+
+    })());
 
 
 
@@ -64,5 +83,9 @@ export async function GET(request: NextRequest, context: {
     }
 
 
+
+    return Response.json({
+        app,
+    });
     return Response.redirect(url);
 }

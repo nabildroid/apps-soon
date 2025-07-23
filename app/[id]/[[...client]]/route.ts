@@ -4,7 +4,7 @@ import { unstable_cache as cache } from "next/cache"
 import { cookies, headers } from "next/headers";
 import { NextRequest } from "next/server";
 
-import { waitUntil,ipAddress } from "@vercel/functions";
+import { waitUntil, ipAddress } from "@vercel/functions";
 import { getAppById } from "@/app/lib";
 import { postRedis, redis } from "@/app/upstash";
 
@@ -55,19 +55,22 @@ export async function GET(request: NextRequest, context: {
     });
 
 
-    const ip = ipAddress(request) 
+    const ip = ipAddress(request) ?? "unknown-ip";
     waitUntil((async () => {
-        await analytics.shutdown();
 
         // log the ip to the system
 
         if (ip) {
-            await postRedis(`set/${ip}/EX/600`, {
+            await postRedis(`set/${ip}`, {
                 name: app.Name,
-                source:params.client.join("/"),
+                source: params.client.join("/"),
                 id: params.id,
             })
+
+            await redis(`/expire/${ip}/600`);
         }
+
+        await analytics.shutdown();
 
         return;
 

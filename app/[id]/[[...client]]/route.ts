@@ -63,6 +63,7 @@ export async function GET(request: NextRequest, context: {
         if (ip) {
             await postRedis(`set/${ip}`, {
                 name: app.Name,
+                extra:app.extra,
                 source: params.client.join("/"),
                 id: params.id,
             })

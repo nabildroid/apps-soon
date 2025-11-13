@@ -43,8 +43,6 @@ export async function GET(request: NextRequest, context: {
 
 
 
-    console.log(app.Posthog);
-    console.log(app);
     
     const analytics = Analytics(
         !!app.Posthog ? app.Posthog.split("-").pop()?.trim() : undefined
@@ -93,7 +91,6 @@ export async function GET(request: NextRequest, context: {
     } catch (e) {
         url = new URL("https://l.laknabil.me/t/soon");
     }
-
 
     return Response.redirect(url);
 }

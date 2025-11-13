@@ -31,6 +31,7 @@ export type IApp = {
     "Section 2-5": string; // Assuming plain_text extraction or empty string
     "Name": string; // Based on title[0].plain_text
     "extra": string; // Assuming plain_text extraction or empty string
+    "Posthog": string; // Assuming plain_text extraction or empty string
 };
 
 
@@ -101,6 +102,7 @@ export function makeIAPPFromNotionPage(pageData: any): IApp {
         // Note: Notion property 'Name' (type title) maps to 'Name' in IApp
         "Name": getPlainText(properties["Name"]),
         "extra": getPlainText(properties["extra"]),
+        "Posthog": getPlainText(properties["Posthog"]),
     };
 }
 

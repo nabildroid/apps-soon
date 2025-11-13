@@ -1,5 +1,5 @@
 import { makeIAPPFromNotionPage } from "@/app/types";
-import { analytics, notion } from "@/app/utils";
+import { Analytics, notion } from "@/app/utils";
 import { unstable_cache as cache } from "next/cache"
 import { cookies, headers } from "next/headers";
 import { NextRequest } from "next/server";
@@ -42,6 +42,11 @@ export async function GET(request: NextRequest, context: {
     // for now let's go to the redirection link only
 
 
+
+    const analytics = Analytics(
+        !!app.Posthog ? app.Posthog.split("-").pop()?.trim() : undefined
+    );
+
     analytics.capture({
         distinctId: params.client.join("/") ?? "unknown",
         event: "viewed",
@@ -63,7 +68,7 @@ export async function GET(request: NextRequest, context: {
         if (ip) {
             await postRedis(`set/${ip}`, {
                 name: app.Name,
-                extra:app.extra,
+                extra: app.extra,
                 source: params.client.join("/"),
                 id: params.id,
             })
@@ -86,6 +91,6 @@ export async function GET(request: NextRequest, context: {
         url = new URL("https://l.laknabil.me/t/soon");
     }
 
-    
+
     return Response.redirect(url);
 }

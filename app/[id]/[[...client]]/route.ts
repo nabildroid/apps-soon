@@ -43,6 +43,9 @@ export async function GET(request: NextRequest, context: {
 
 
 
+    console.log(app.Posthog);
+    console.log(app);
+    
     const analytics = Analytics(
         !!app.Posthog ? app.Posthog.split("-").pop()?.trim() : undefined
     );
